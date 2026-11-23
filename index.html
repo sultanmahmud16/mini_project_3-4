@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriScan - Food & Nutrition Explorer</title>
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+
+  <!-- Tailwind via CDN (no install needed) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="app-bg text-slate-800">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar md:w-24 md:min-h-screen flex md:flex-col items-center justify-between md:justify-start gap-2 md:gap-4 px-4 py-3 md:py-6">
+      <div class="flex items-center gap-2 md:flex-col md:mb-6">
+        <img src="images/logo.svg" alt="NutriScan logo" class="w-9 h-9">
+        <span class="text-white text-sm font-semibold">NutriScan</span>
+      </div>
+
+      <nav class="flex md:flex-col gap-2 md:gap-3">
+        <button class="nav-btn active" data-view="explore" title="Explore foods">
+          <span>🔍</span>
+        </button>
+        <button class="nav-btn relative" data-view="favourites" title="My favourites">
+          <span>❤️</span>
+          <span id="fav-badge" class="badge">0</span>
+        </button>
+        <button class="nav-btn relative" data-view="compare" title="Compare foods">
+          <span>⚖️</span>
+          <span id="compare-badge" class="badge">0</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ===== Main area ===== -->
+    <main class="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto">
+
+      <!-- Header -->
+      <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h1 id="greeting" class="text-3xl font-semibold">Hello there,</h1>
+          <p class="text-slate-500">Look up any packaged food and see what is really inside.</p>
+        </div>
+
+        <form id="search-form" class="search-box flex items-center gap-2 w-full md:w-96">
+          <span class="pl-3">🔍</span>
+          <input id="search-input" type="text" placeholder="Try oats, yogurt, noodles..."
+                 class="flex-1 bg-transparent py-3 outline-none" autocomplete="off">
+          <button type="submit" class="bg-slate-800 text-white rounded-xl px-4 py-2 mr-1 text-sm font-medium hover:bg-slate-700">Search</button>
+        </form>
+      </header>
+
+      <!-- ================= EXPLORE VIEW ================= -->
+      <section id="view-explore">
+
+        <!-- Banner (like the challenge card in the design) -->
+        <div class="banner flex items-center gap-4 p-5 mb-6">
+          <img src="images/hero.svg" alt="Healthy bowl" class="w-24 h-24 md:w-32 md:h-32 shrink-0">
+          <div>
+            <h2 class="text-xl md:text-2xl font-semibold">Know your food before you eat it</h2>
+            <p class="text-slate-600 text-sm md:text-base">Calories, protein, carbs and fat for every product, per 100 g. Save the good ones and compare up to 3.</p>
+          </div>
+        </div>
+
+        <!-- Quick search chips -->
+        <div id="chips" class="flex flex-wrap gap-2 mb-5">
+          <button class="chip" data-query="oats">Oats</button>
+          <button class="chip" data-query="yogurt">Yogurt</button>
+          <button class="chip" data-query="chocolate">Chocolate</button>
+          <button class="chip" data-query="instant noodles">Noodles</button>
+          <button class="chip" data-query="peanut butter">Peanut butter</button>
+          <button class="chip" data-query="orange juice">Orange juice</button>
+        </div>
+
+        <!-- Filter + sort -->
+        <div class="flex flex-wrap items-center gap-3 mb-5">
+          <label class="text-sm text-slate-500" for="grade-filter">Nutri-Score</label>
+          <select id="grade-filter" class="select">
+            <option value="all">All grades</option>
+            <option value="a">A (best)</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+            <option value="d">D</option>
+            <option value="e">E (worst)</option>
+          </select>
+
+          <label class="text-sm text-slate-500 ml-2" for="sort-select">Sort by</label>
+          <select id="sort-select" class="select">
+            <option value="default">Default</option>
+            <option value="kcal-low">Calories: low to high</option>
+            <option value="kcal-high">Calories: high to low</option>
+            <option value="protein-high">Protein: high to low</option>
+            <option value="fat-low">Fat: low to high</option>
+          </select>
+
+          <span id="result-count" class="text-sm text-slate-500 ml-auto"></span>
+        </div>
+
+        <!-- Loading / error / empty messages go here -->
+        <div id="status-box" class="hidden"></div>
+
+        <!-- Product cards go here -->
+        <div id="results" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+      </section>
+
+      <!-- ================= FAVOURITES VIEW ================= -->
+      <section id="view-favourites" class="hidden">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-2xl font-semibold">My favourite foods</h2>
+          <button id="clear-favs" class="text-sm text-red-500 hover:underline">Clear all</button>
+        </div>
+        <div id="fav-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+      </section>
+
+      <!-- ================= COMPARE VIEW ================= -->
+      <section id="view-compare" class="hidden">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-2xl font-semibold">Compare foods</h2>
+          <button id="clear-compare" class="text-sm text-red-500 hover:underline">Clear all</button>
+        </div>
+        <div id="compare-box"></div>
+      </section>
+
+      <footer class="text-xs text-slate-400 mt-12 pb-6">
+        Data from <a class="underline" href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>. All values are per 100 g. Made for CSE-2340 mini project.
+      </footer>
+    </main>
+  </div>
+
+  <!-- ===== Details popup ===== -->
+  <div id="modal" class="modal-backdrop hidden">
+    <div class="modal-card" id="modal-content"></div>
+  </div>
+
+  <!-- Small message that pops up at the bottom -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
